@@ -54,9 +54,16 @@
         dest: "/usr/src/amzn-drivers-ena_linux-{{ sansible_aws_ena_driver_version }}/dkms.conf"
         src: dkms.conf.j2
 
+    - name: Check if ENA driver is added
+      become: yes
+      ignore_errors: yes
+      shell: "dkms status | grep amzn-drivers-ena_linux | grep {{ sansible_aws_ena_driver_version }} | grep installed"
+      register: aws_ena_driver_added
+
     - name: Add ENA driver via DKMS
       become: yes
       command: "dkms add -m amzn-drivers-ena_linux -v {{ sansible_aws_ena_driver_version }}"
+      when: aws_ena_driver_added.stdout == ""
 
     - name: Build ENA driver via DKMS
       become: yes
